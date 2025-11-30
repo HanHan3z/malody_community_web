@@ -3,6 +3,7 @@ import PlayerRankPage from './pages/PlayerRank'
 import ChartListPage from './pages/ChartList'
 import EventListPage from './pages/EventList'
 import SkinListPage from './pages/SkinList'
+import WikiPage from './pages/Wiki'
 
 const isPlayerRankPath = (path: string) => {
   return path.startsWith('/page/all/player') || path === '/all_player' || path === '/page/all/player/'
@@ -20,8 +21,15 @@ const isSkinPath = (path: string) => {
   return path.startsWith('/store/skin')
 }
 
+const isWikiPath = (path: string) => {
+  return path.startsWith('/wiki/')
+}
+
 function App() {
   const path = window.location.pathname
+  if (isWikiPath(path)) {
+    return <WikiPage />
+  }
   if (isSkinPath(path)) {
     return <SkinListPage />
   }
