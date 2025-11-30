@@ -256,6 +256,35 @@ export type RespStoreEvent = {
   data?: RespStoreEventItem[]
 }
 
+export type RespSkinListItem = {
+  id: number
+  uid?: number
+  creator?: string
+  name: string
+  price: number
+  preview?: string
+  cover?: string
+  buy?: boolean
+  hot?: number
+  mode?: number
+  time?: number
+}
+
+export type RespSkinList = {
+  code: number
+  hasMore?: boolean
+  next?: number
+  data?: RespSkinListItem[]
+}
+
+export type RespWiki = {
+  code: number
+  wiki?: string
+  raw?: boolean
+  title?: string
+  locked?: boolean
+}
+
 export const fetchBasicInfo = () => getJson<RespBasicInfo>('/push/info/wt', { auth: false })
 
 export const fetchStoreList = (
@@ -290,6 +319,12 @@ export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: num
 
 export const fetchStoreEvents = (params?: { active?: number; from?: number }) =>
   getJson<RespStoreEvent>('/store/events', { params })
+
+export const fetchSkinList = (params?: { uid?: number; mode?: number; word?: string; from?: number }) =>
+  getJson<RespSkinList>('/skin/list', { params })
+
+export const fetchWiki = (params: { lang?: number; touid?: number; sid?: number; cid?: number; pid?: number; raw?: number }) =>
+  getJson<RespWiki>('/community/wiki', { params })
 
 export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>
   postForm<RespLogin>('/account/login/wt', {

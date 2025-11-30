@@ -10,7 +10,7 @@ type TopbarProps = {
 const navLinks = [
   { labelKey: 'nav.home', href: '/' },
   { labelKey: 'nav.charts', href: '/all_chart' },
-  { labelKey: 'nav.wiki', href: '/all_page' },
+  { labelKey: 'nav.skins', href: '/store/skin' },
   { labelKey: 'nav.events', href: '/score/event' },
   { labelKey: 'nav.players', href: '/page/all/player' },
   { labelKey: 'nav.talk', href: 'https://discord.gg/unk9hgF' },

@@ -2,6 +2,7 @@ import HomePage from './pages/Home'
 import PlayerRankPage from './pages/PlayerRank'
 import ChartListPage from './pages/ChartList'
 import EventListPage from './pages/EventList'
+import SkinListPage from './pages/SkinList'
 
 const isPlayerRankPath = (path: string) => {
   return path.startsWith('/page/all/player') || path === '/all_player' || path === '/page/all/player/'
@@ -15,8 +16,15 @@ const isEventPath = (path: string) => {
   return path.startsWith('/score/event')
 }
 
+const isSkinPath = (path: string) => {
+  return path.startsWith('/store/skin')
+}
+
 function App() {
   const path = window.location.pathname
+  if (isSkinPath(path)) {
+    return <SkinListPage />
+  }
   if (isEventPath(path)) {
     return <EventListPage />
   }
