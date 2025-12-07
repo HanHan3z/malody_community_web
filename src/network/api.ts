@@ -23,6 +23,12 @@ export type PackBase = {
   message?: string
 }
 
+export type RespImageUpload = {
+  code: number
+  url?: string
+  meta?: Record<string, string>
+}
+
 export type AuthSession = {
   uid: number
   key: string
@@ -202,6 +208,73 @@ export type RespLogin = {
   group?: number[]
 }
 
+export type RespPlayerInfoData = {
+  uid?: number
+  username?: string
+  name?: string
+  avatar?: string
+  sign?: string
+  gold?: number
+  level?: number
+  exp?: number
+  playcount?: number
+  acc?: number
+  combo?: number
+  mmr?: number
+  regtime?: number
+}
+
+export type RespPlayerInfo = {
+  code: number
+  data?: RespPlayerInfoData
+}
+
+export type RespPlayerActivityItem = {
+  time?: number
+  text?: string
+  type?: string
+  value?: string
+  title?: string
+  desc?: string
+  link?: string
+}
+
+export type RespPlayerActivity = {
+  code: number
+  data?: RespPlayerActivityItem[]
+}
+
+export type RespPlayerChartItem = {
+  cid: number
+  sid?: number
+  title?: string
+  artist?: string
+  cover?: string
+  mode?: number
+  version?: string
+  level?: number
+  lastedit?: number
+}
+
+export type RespPlayerChartList = {
+  code: number
+  data?: RespPlayerChartItem[]
+}
+
+export type RespPlayerAllRankItem = {
+  mode?: number
+  rank?: number
+  value?: number
+  acc?: number
+  combo?: number
+  level?: number
+}
+
+export type RespPlayerAllRank = {
+  code: number
+  data?: RespPlayerAllRankItem[]
+}
+
 export type RespBasicInfo = {
   code: number
   news?: RespBasicInfoNews[]
@@ -286,6 +359,17 @@ export type RespSkinList = {
   data?: RespSkinListItem[]
 }
 
+export type RespSkinBuyData = {
+  id: number
+  name?: string
+  url?: string
+}
+
+export type RespSkinBuy = {
+  code: number
+  data?: RespSkinBuyData
+}
+
 export type RespSongInfo = {
   code: number
   sid: number
@@ -338,6 +422,7 @@ export type RespChartInfo = {
 export type RespRankingItem = {
   uid: number
   username: string
+  avatar?: string
   score: number
   combo: number
   acc: number
@@ -454,17 +539,67 @@ export const fetchStorePromote = (
     headers: buildVersionHeader(options?.clientVersion),
   })
 
+export const fetchPlayerInfo = (params: { uid: number; ver?: number; bver?: number }) =>
+  getJson<RespPlayerInfo>('/player/info', {
+    params: { touid: params.uid, ver: params.ver, bver: params.bver },
+  })
+
+export const fetchPlayerActivity = (params: { uid: number }) =>
+  getJson<RespPlayerActivity>('/player/activity', { params: { touid: params.uid } })
+
+export const fetchPlayerCharts = (params: { uid: number; from?: number; order?: number; mode?: number }) =>
+  getJson<RespPlayerChartList>('/community/player/chart', {
+    params: {
+      touid: params.uid,
+      from: params.from,
+      order: params.order,
+      mode: params.mode,
+    },
+  })
+
+export const fetchPlayerAllRank = (params: { uid: number }) =>
+  getJson<RespPlayerAllRank>('/ranking/player/all', { params: { touid: params.uid } })
+
 export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: number; ver?: number; bver?: number }) =>
   getJson<RespGlobalRank>('/ranking/global', { params })
 
 export const fetchStoreEvents = (params?: { active?: number; from?: number }) =>
   getJson<RespStoreEvent>('/store/events', { params })
 
-export const fetchSkinList = (params?: { uid?: number; mode?: number; word?: string; from?: number }) =>
+export const fetchSkinList = (params?: { uid?: number; mode?: number; word?: string; from?: number; sid?: number }) =>
   getJson<RespSkinList>('/skin/list', { params })
+
+export const fetchSkinDetail = (params: { sid: number }) => fetchSkinList({ sid: params.sid })
+
+export const buySkin = (payload: { sid: number }) =>
+  postForm<RespSkinBuy>('/skin/buy', { body: { sid: payload.sid, id: payload.sid } })
 
 export const fetchSongInfo = (params: { sid: number }) =>
   getJson<RespSongInfo>('/community/song/info', { params })
+
+export const saveSongInfo = (payload: {
+  sid: number
+  title: string
+  artist: string
+  length: number
+  bpm: number
+  titleOrg?: string
+  artistOrg?: string
+}) =>
+  postForm<PackBase>('/community/song/info', {
+    body: {
+      sid: payload.sid,
+      title: payload.title,
+      artist: payload.artist,
+      length: payload.length,
+      bpm: payload.bpm,
+      orgt: payload.titleOrg,
+      orga: payload.artistOrg,
+    },
+  })
+
+export const fetchSongCoverUpload = (params: { sid: number }) =>
+  getJson<RespImageUpload>('/community/song/cover', { params })
 
 export const fetchSongCharts = (params: { sid: number }) =>
   getJson<RespSongCharts>('/community/song/charts', { params })
@@ -500,10 +635,26 @@ export const fetchChartDonateList = (params: { cid: number }) => getJson<RespCha
 export const donateChart = (payload: { cid: number; gold: number }) =>
   postForm<PackBase>('/community/chart/donate', { body: { cid: payload.cid, gold: payload.gold } })
 
-export const fetchWiki = (params: { lang?: number; touid?: number; sid?: number; cid?: number; pid?: number; raw?: number }) =>
+export const fetchWiki = (params: {
+  lang?: number
+  touid?: number
+  sid?: number
+  cid?: number
+  pid?: number
+  key?: string
+  raw?: number
+}) =>
   getJson<RespWiki>('/community/wiki', { params })
 
-export const saveWiki = (payload: { wiki: string; lang?: number; touid?: number; sid?: number; cid?: number; pid?: number }) =>
+export const saveWiki = (payload: {
+  wiki: string
+  lang?: number
+  touid?: number
+  sid?: number
+  cid?: number
+  pid?: number
+  key?: string
+}) =>
   postForm<RespSaveWiki>('/community/wiki', {
     body: {
       wiki: payload.wiki,
@@ -512,6 +663,7 @@ export const saveWiki = (payload: { wiki: string; lang?: number; touid?: number;
       sid: payload.sid,
       cid: payload.cid,
       pid: payload.pid,
+      key: payload.key,
     },
   })
 

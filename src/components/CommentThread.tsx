@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { getSession } from '../network/api'
 import { useI18n } from '../i18n'
+import type { PackBase } from '../network/api'
 
 export type CommentItem = {
   tid: number
@@ -30,6 +31,7 @@ export type CommentAddResp = {
 type CommentThreadProps = {
   fetchComments: (params: { from?: number }) => Promise<CommentListResp>
   submitComment: (content: string) => Promise<CommentAddResp>
+  deleteComment: (tid: number) => Promise<PackBase>
   onRequireAuth?: () => void
 }
 
@@ -40,7 +42,7 @@ const formatTime = (ts?: number) => {
   return date.toLocaleString()
 }
 
-function CommentThread({ fetchComments, submitComment, onRequireAuth }: CommentThreadProps) {
+function CommentThread({ fetchComments, submitComment, deleteComment, onRequireAuth }: CommentThreadProps) {
   const { t } = useI18n()
   const [comments, setComments] = useState<CommentItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -51,14 +53,17 @@ function CommentThread({ fetchComments, submitComment, onRequireAuth }: CommentT
   const [draft, setDraft] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [deletingTid, setDeletingTid] = useState<number | null>(null)
+  const [deleteError, setDeleteError] = useState('')
 
-  const sessionUid = useMemo(() => getSession()?.uid, [])
+  const sessionUid = getSession()?.uid
 
   const loadComments = async (reset = false) => {
     if (loading || (loadingMore && !reset)) return
     if (reset) setLoading(true)
     else setLoadingMore(true)
     setError('')
+    setDeleteError('')
     try {
       const resp = await fetchComments({ from: reset ? undefined : next })
       if (resp.code !== 0) {
@@ -131,6 +136,32 @@ function CommentThread({ fetchComments, submitComment, onRequireAuth }: CommentT
     }
   }
 
+  const handleDelete = async (tid: number) => {
+    if (deletingTid) return
+    const session = getSession()
+    if (!session || session.uid === 1) {
+      onRequireAuth?.()
+      return
+    }
+    const target = comments.find((item) => item.tid === tid)
+    if (!target || target.uid !== session.uid) return
+    setDeletingTid(tid)
+    setDeleteError('')
+    try {
+      const resp = await deleteComment(tid)
+      if (resp.code !== 0) {
+        setDeleteError(t('comment.error.delete'))
+        return
+      }
+      setComments((prev) => prev.filter((item) => item.tid !== tid))
+    } catch (err) {
+      console.error(err)
+      setDeleteError(t('comment.error.delete'))
+    } finally {
+      setDeletingTid(null)
+    }
+  }
+
   return (
     <div className="comment-thread">
       <form className="comment-editor" onSubmit={onSubmit}>
@@ -153,6 +184,7 @@ function CommentThread({ fetchComments, submitComment, onRequireAuth }: CommentT
       </form>
 
       {error && <div className="comment-error">{error}</div>}
+      {deleteError && <div className="comment-error">{deleteError}</div>}
       {loading && (
         <div className="comment-skeleton">
           <div className="line wide" />
@@ -166,9 +198,20 @@ function CommentThread({ fetchComments, submitComment, onRequireAuth }: CommentT
         {comments.map((item) => (
           <div className="comment-card" key={`${item.tid}-${item.time}`}>
             <div className="comment-header">
-              <strong>{item.name || t('comment.user.unknown')}</strong>
+              {item.uid ? (
+                <a className="comment-user" href={`/player/${item.uid}`}>
+                  {item.name || t('comment.user.unknown')}
+                </a>
+              ) : (
+                <strong>{item.name || t('comment.user.unknown')}</strong>
+              )}
               <span className="comment-time">{formatTime(item.time)}</span>
               {item.num !== undefined && <span className="pill ghost">#{item.num}</span>}
+              {sessionUid === item.uid && (
+                <button className="btn ghost small" type="button" onClick={() => handleDelete(item.tid)} disabled={deletingTid === item.tid}>
+                  {deletingTid === item.tid ? t('comment.deleting') : t('comment.delete')}
+                </button>
+              )}
             </div>
             <p className="comment-body">{item.content}</p>
           </div>

@@ -1,0 +1,410 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import AuthModal from '../components/AuthModal'
+import Footer from '../components/Footer'
+import Topbar from '../components/Topbar'
+import { useI18n } from '../i18n'
+import {
+  fetchPlayerActivity,
+  fetchPlayerAllRank,
+  fetchPlayerCharts,
+  fetchPlayerInfo,
+  setSession,
+  type RespPlayerActivityItem,
+  type RespPlayerAllRankItem,
+  type RespPlayerChartItem,
+  type RespPlayerInfoData,
+} from '../network/api'
+import { avatarUrl, coverUrl, modeLabel } from '../utils/formatters'
+import './home.css'
+import './player.css'
+
+const parsePlayerId = () => {
+  const match = window.location.pathname.match(/(?:\/player\/|\/accounts\/user\/)(\d+)/)
+  if (match?.[1]) return Number(match[1])
+  const search = new URLSearchParams(window.location.search)
+  const uid = search.get('uid')
+  return uid ? Number(uid) : undefined
+}
+
+const formatTime = (ts?: number) => {
+  if (!ts) return ''
+  const date = new Date(ts * 1000)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString()
+}
+
+const formatDate = (ts?: number) => {
+  if (!ts) return ''
+  const date = new Date(ts * 1000)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString()
+}
+
+function PlayerPage() {
+  const { t } = useI18n()
+  const playerId = useMemo(() => parsePlayerId(), [])
+  const [authOpen, setAuthOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+  const [userName, setUserName] = useState<string>()
+
+  const [info, setInfo] = useState<RespPlayerInfoData>()
+  const [infoError, setInfoError] = useState('')
+  const [infoLoading, setInfoLoading] = useState(false)
+
+  const [activities, setActivities] = useState<RespPlayerActivityItem[]>([])
+  const [activityError, setActivityError] = useState('')
+  const [activityLoading, setActivityLoading] = useState(false)
+
+  const [charts, setCharts] = useState<RespPlayerChartItem[]>([])
+  const [chartError, setChartError] = useState('')
+  const [chartLoading, setChartLoading] = useState(false)
+
+  const [ranks, setRanks] = useState<RespPlayerAllRankItem[]>([])
+  const [rankError, setRankError] = useState('')
+  const [rankLoading, setRankLoading] = useState(false)
+  const infoLoadedRef = useRef<number>()
+  const activityLoadedRef = useRef<number>()
+  const chartsLoadedRef = useRef<number>()
+  const rankLoadedRef = useRef<number>()
+  const [activeTab, setActiveTab] = useState<'activity' | 'charts' | 'rank' | 'wiki'>('activity')
+
+  useEffect(() => {
+    if (!playerId || Number.isNaN(playerId)) {
+      setInfoError(t('player.error.missingId'))
+      return
+    }
+    if (infoLoadedRef.current === playerId) return
+    infoLoadedRef.current = playerId
+    const loadInfo = async () => {
+      setInfoLoading(true)
+      setInfoError('')
+      try {
+        const resp = await fetchPlayerInfo({ uid: playerId })
+        const data = resp.data ?? (resp as unknown as RespPlayerInfoData)
+        if (resp.code !== 0 || !data) {
+          setInfoError(t('player.error.info'))
+          setInfo(undefined)
+          return
+        }
+        setInfo({ ...data, uid: data.uid ?? playerId })
+        setUserName((prev) => prev ?? data.username ?? data.name)
+      } catch (err) {
+        console.error(err)
+        setInfoError(t('player.error.info'))
+        setInfo(undefined)
+      } finally {
+        setInfoLoading(false)
+      }
+    }
+    loadInfo()
+  }, [playerId, t])
+
+  useEffect(() => {
+    if (!playerId || Number.isNaN(playerId)) {
+      setActivityError(t('player.error.missingId'))
+      return
+    }
+    if (activityLoadedRef.current === playerId) return
+    activityLoadedRef.current = playerId
+    const loadActivity = async () => {
+      setActivityLoading(true)
+      setActivityError('')
+      try {
+        const resp = await fetchPlayerActivity({ uid: playerId })
+        if (resp.code !== 0) {
+          setActivityError(t('player.error.activity'))
+          setActivities([])
+          return
+        }
+        setActivities(resp.data ?? [])
+      } catch (err) {
+        console.error(err)
+        setActivityError(t('player.error.activity'))
+        setActivities([])
+      } finally {
+        setActivityLoading(false)
+      }
+    }
+    loadActivity()
+  }, [playerId, t])
+
+  useEffect(() => {
+    if (!playerId || Number.isNaN(playerId)) {
+      setChartError(t('player.error.missingId'))
+      return
+    }
+    if (chartsLoadedRef.current === playerId) return
+    chartsLoadedRef.current = playerId
+    const loadCharts = async () => {
+      setChartLoading(true)
+      setChartError('')
+      try {
+        const resp = await fetchPlayerCharts({ uid: playerId })
+        if (resp.code !== 0) {
+          setChartError(t('player.error.charts'))
+          setCharts([])
+          return
+        }
+        setCharts(resp.data ?? [])
+      } catch (err) {
+        console.error(err)
+        setChartError(t('player.error.charts'))
+        setCharts([])
+      } finally {
+        setChartLoading(false)
+      }
+    }
+    loadCharts()
+  }, [playerId, t])
+
+  useEffect(() => {
+    if (!playerId || Number.isNaN(playerId)) {
+      setRankError(t('player.error.missingId'))
+      return
+    }
+    if (rankLoadedRef.current === playerId) return
+    rankLoadedRef.current = playerId
+    const loadRanks = async () => {
+      setRankLoading(true)
+      setRankError('')
+      try {
+        const resp = await fetchPlayerAllRank({ uid: playerId })
+        if (resp.code !== 0) {
+          setRankError(t('player.error.rank'))
+          setRanks([])
+          return
+        }
+        setRanks(resp.data ?? [])
+      } catch (err) {
+        console.error(err)
+        setRankError(t('player.error.rank'))
+        setRanks([])
+      } finally {
+        setRankLoading(false)
+      }
+    }
+    loadRanks()
+  }, [playerId, t])
+
+  const displayName = info?.name || info?.username || t('player.placeholder.name')
+  const wikiLink = playerId ? `/wiki?touid=${playerId}` : '/wiki'
+
+  const metaBadges = [
+    info?.regtime ? t('player.joined', { time: formatDate(info.regtime) }) : undefined,
+    info?.playcount !== undefined ? t('player.meta.playcount', { value: info.playcount }) : undefined,
+    info?.gold !== undefined ? t('player.meta.gold', { value: info.gold }) : undefined,
+    info?.exp !== undefined ? t('player.meta.exp', { value: info.exp }) : undefined,
+  ].filter(Boolean) as string[]
+
+  return (
+    <div className="page player-page">
+      <Topbar
+        onSignIn={() => {
+          setAuthMode('signin')
+          setAuthOpen(true)
+        }}
+        onSignUp={() => {
+          setAuthMode('signup')
+          setAuthOpen(true)
+        }}
+        onSignOut={() => {
+          setSession(undefined)
+          setUserName(undefined)
+        }}
+        userName={userName}
+      />
+
+      <header className="player-hero content-container">
+        <div className="player-avatar" style={{ backgroundImage: `url(${avatarUrl(info?.avatar)})` }} />
+        <div className="player-identity">
+          <p className="eyebrow">{t('player.eyebrow')}</p>
+          <h1>{displayName}</h1>
+          {playerId && <p className="player-uid">UID {playerId}</p>}
+          {info?.sign && <p className="player-sign">{info.sign}</p>}
+          <div className="player-meta">
+            {metaBadges.map((text) => (
+              <span className="pill ghost" key={text}>
+                {text}
+              </span>
+            ))}
+            <a className="pill ghost" href={wikiLink}>
+              {t('player.wikiLink')}
+            </a>
+          </div>
+          {infoError && <p className="player-error">{infoError}</p>}
+          {infoLoading && <p className="player-loading">{t('player.loading')}</p>}
+        </div>
+      </header>
+
+      <div className="content-container player-body">
+        <div className="player-tabs">
+          <button className={activeTab === 'activity' ? 'active' : ''} type="button" onClick={() => setActiveTab('activity')}>
+            {t('player.tab.activity')}
+          </button>
+          <button className={activeTab === 'charts' ? 'active' : ''} type="button" onClick={() => setActiveTab('charts')}>
+            {t('player.tab.charts')}
+          </button>
+          <button className={activeTab === 'rank' ? 'active' : ''} type="button" onClick={() => setActiveTab('rank')}>
+            {t('player.tab.rank')}
+          </button>
+          <button className={activeTab === 'wiki' ? 'active' : ''} type="button" onClick={() => setActiveTab('wiki')}>
+            {t('player.tab.wiki')}
+          </button>
+        </div>
+
+        {activeTab === 'activity' && (
+          <section className="player-section">
+            <div className="player-section-head">
+              <div>
+                <p className="eyebrow">{t('player.section.activity')}</p>
+                <h2>{t('player.section.activityTitle')}</h2>
+              </div>
+            </div>
+            {activityError && <div className="player-error">{activityError}</div>}
+            {activityLoading && (
+              <div className="player-skeleton">
+                <div className="line wide" />
+                <div className="line" />
+                <div className="line" />
+              </div>
+            )}
+            {!activityLoading && activities.length === 0 && !activityError && (
+              <div className="player-empty">{t('player.activity.empty')}</div>
+            )}
+            <div className="player-activity-list">
+              {activities.map((item, idx) => (
+                <div className="activity-item" key={`${item.time ?? idx}-${item.title ?? item.text ?? idx}`}>
+                  <div className="activity-meta">
+                    <span className="pill ghost">{formatTime(item.time)}</span>
+                    {item.type && <span className="pill ghost">{item.type}</span>}
+                  </div>
+                  <div className="activity-content">
+                    <p className="activity-title">{item.msg || item.title || item.text || t('player.activity.unknown')}</p>
+                    {item.desc && <p className="activity-desc">{item.desc}</p>}
+                  </div>
+                  {item.link && (
+                    <a className="activity-link" href={item.link}>
+                      {t('player.activity.link')}
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'charts' && (
+          <section className="player-section">
+            <div className="player-section-head">
+              <div>
+                <p className="eyebrow">{t('player.section.charts')}</p>
+                <h2>{t('player.section.chartsTitle')}</h2>
+              </div>
+            </div>
+            {chartError && <div className="player-error">{chartError}</div>}
+            {chartLoading && (
+              <div className="player-skeleton">
+                <div className="line wide" />
+                <div className="line" />
+                <div className="line" />
+              </div>
+            )}
+            {!chartLoading && charts.length === 0 && !chartError && (
+              <div className="player-empty">{t('player.charts.empty')}</div>
+            )}
+            <div className="player-chart-grid">
+              {charts.map((item) => (
+                <a className="player-chart-card" key={item.cid} href={`/chart/${item.cid}`}>
+                  <div className="player-chart-cover" style={{ backgroundImage: `url(${coverUrl(item.cover)})` }} />
+                  <div className="player-chart-body">
+                    <p className="player-chart-title">{item.title || t('player.charts.untitled')}</p>
+                    <p className="player-chart-meta">
+                      {item.artist || t('player.charts.unknown')} · {modeLabel(item.mode)}
+                    </p>
+                    {item.version && <span className="pill ghost">{item.version}</span>}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'rank' && (
+          <section className="player-section">
+            <div className="player-section-head">
+              <div>
+                <p className="eyebrow">{t('player.section.rank')}</p>
+                <h2>{t('player.section.rankTitle')}</h2>
+              </div>
+            </div>
+            {rankError && <div className="player-error">{rankError}</div>}
+            {rankLoading && (
+              <div className="player-skeleton">
+                <div className="line wide" />
+                <div className="line" />
+                <div className="line" />
+              </div>
+            )}
+            {!rankLoading && ranks.length === 0 && !rankError && (
+              <div className="player-empty">{t('player.rank.empty')}</div>
+            )}
+            <div className="player-rank-grid">
+              {ranks.map((item, idx) => (
+                <div className="player-rank-card" key={`${item.mode ?? idx}-${item.rank ?? idx}`}>
+                  <div className="player-rank-head">
+                    <span className="pill ghost">{modeLabel(item.mode)}</span>
+                    <span className="player-rank-score">{item.value ?? '—'}</span>
+                  </div>
+                  <p className="player-rank-pos">
+                    {t('player.rank.position', { value: item.rank ?? t('player.rank.unknown') })}
+                  </p>
+                  <div className="player-rank-meta">
+                    {item.level !== undefined && <span>{t('player.stat.level')}: {item.level}</span>}
+                    {item.acc !== undefined && <span>{t('player.stat.acc')}: {item.acc.toFixed(2)}%</span>}
+                    {item.combo !== undefined && <span>{t('player.stat.combo')}: {item.combo}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'wiki' && (
+          <section className="player-section">
+            <div className="player-section-head">
+              <div>
+                <p className="eyebrow">{t('player.section.wiki')}</p>
+                <h2>{t('player.section.wikiTitle')}</h2>
+              </div>
+              <a className="btn ghost small" href={wikiLink}>
+                {t('player.wikiLink')}
+              </a>
+            </div>
+            <div className="player-wiki-placeholder">
+              <p className="player-wiki-text">{t('player.wiki.desc')}</p>
+            </div>
+          </section>
+        )}
+      </div>
+
+      <Footer
+        links={[
+          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
+          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
+          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
+        ]}
+        showLanguageSelector
+      />
+
+      {authOpen && (
+        <AuthModal
+          mode={authMode}
+          onClose={() => setAuthOpen(false)}
+          onSuccess={({ username }) => setUserName(username)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default PlayerPage

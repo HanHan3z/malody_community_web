@@ -167,6 +167,8 @@
   background: var(--primary-soft);
   color: var(--primary-strong);
   font-weight: 700;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .banner {

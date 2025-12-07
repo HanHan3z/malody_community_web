@@ -8,6 +8,10 @@ export const avatarUrl = (avatar?: string) => {
   return avatar.startsWith('http') ? avatar : `//cni.machart.top/avatar/${avatar}!avatar64`
 }
 
+export const avatarUidUrl = (avatar?: number) => {
+    return `//cni.machart.top/avatar/${avatar}!avatar64`
+}
+
 const modeMap: Record<number, string> = {
   0: 'Key',
   3: 'Catch',

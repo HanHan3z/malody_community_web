@@ -3,9 +3,12 @@ import PlayerRankPage from './pages/PlayerRank'
 import ChartListPage from './pages/ChartList'
 import EventListPage from './pages/EventList'
 import SkinListPage from './pages/SkinList'
+import SkinDetailPage from './pages/SkinDetail'
 import WikiPage from './pages/Wiki'
 import SongPage from './pages/Song'
+import SongEditPage from './pages/SongEdit'
 import ChartPage from './pages/Chart'
+import PlayerPage from './pages/Player'
 
 const isPlayerRankPath = (path: string) => {
   return path.startsWith('/page/all/player') || path === '/all_player' || path === '/page/all/player/'
@@ -19,9 +22,9 @@ const isEventPath = (path: string) => {
   return path.startsWith('/score/event')
 }
 
-const isSkinPath = (path: string) => {
-  return path.startsWith('/store/skin')
-}
+const isSkinDetailPath = (path: string) => path.startsWith('/store/skin/detail') || path.startsWith('/skin/')
+
+const isSkinListPath = (path: string) => path.startsWith('/store/skin') && !path.startsWith('/store/skin/detail')
 
 const isWikiPath = (path: string) => {
   return path.startsWith('/wiki/')
@@ -31,12 +34,26 @@ const isSongPath = (path: string) => {
   return path.startsWith('/song/')
 }
 
+const isSongEditPath = (path: string) => {
+  return path.startsWith('/song/') && path.includes('/edit')
+}
+
 const isChartPath = (path: string) => {
   return path.startsWith('/chart/')
 }
 
+const isPlayerPath = (path: string) => {
+  return path.startsWith('/player/') || path.startsWith('/accounts/user/')
+}
+
 function App() {
   const path = window.location.pathname
+  if (isPlayerPath(path)) {
+    return <PlayerPage />
+  }
+  if (isSongEditPath(path)) {
+    return <SongEditPage />
+  }
   if (isChartPath(path)) {
     return <ChartPage />
   }
@@ -46,7 +63,10 @@ function App() {
   if (isWikiPath(path)) {
     return <WikiPage />
   }
-  if (isSkinPath(path)) {
+  if (isSkinDetailPath(path)) {
+    return <SkinDetailPage />
+  }
+  if (isSkinListPath(path)) {
     return <SkinListPage />
   }
   if (isEventPath(path)) {

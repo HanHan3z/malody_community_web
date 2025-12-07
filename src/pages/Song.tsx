@@ -145,6 +145,7 @@ function SongPage() {
       cancelled = true
     }
   }, [renderOptions, songId, t])
+
   useEffect(() => {
     if (!baseWiki) {
       setWikiHtml('')
@@ -196,9 +197,9 @@ function SongPage() {
   const infoBpm = info?.bpm ? t('charts.card.bpm', { value: info.bpm }) : t('charts.card.bpmUnknown')
 
   const chartTypeLabel = (type?: number) => {
-    if (type === 0) return "Alpha"
-    if (type === 1) return "Beta"
-    if (type === 2) return "Stable"
+    if (type === 0) return 'Alpha'
+    if (type === 1) return 'Beta'
+    if (type === 2) return 'Stable'
     return t('song.charts.type.unknown', { value: type ?? '-' })
   }
 
@@ -243,6 +244,13 @@ function SongPage() {
             <span className="pill ghost">{infoBpm}</span>
             {songId && !Number.isNaN(songId) && <span className="pill ghost">{t('song.meta.id', { id: songId })}</span>}
           </div>
+          {songId && !Number.isNaN(songId) && (
+            <div className="song-actions">
+              <a className="btn ghost small" href={`/song/${songId}/edit`}>
+                {t('song.edit.open')}
+              </a>
+            </div>
+          )}
           {loadingInfo && !info && <p className="song-loading">{t('charts.loading')}</p>}
           {infoError && <p className="song-error">{infoError}</p>}
         </div>

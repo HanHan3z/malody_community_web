@@ -204,7 +204,7 @@ function SkinListPage() {
         {skins.length ? (
           <div className="skin-grid">
             {skins.map((item) => (
-              <a className="chart-card skin-card" href={`/skin/${item.id}`} key={item.id}>
+              <a className="chart-card skin-card" href={`/store/skin/detail/${item.id}`} key={item.id}>
                 <div className="chart-card-cover" style={{ backgroundImage: `url(${item.cover})` }}>
                   <div className="chart-card-badges">
                     {item.modeLabels.slice(0, 3).map((label) => (

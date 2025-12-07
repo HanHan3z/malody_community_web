@@ -1,0 +1,148 @@
+.skin-detail-page .content-container {
+  max-width: 1100px;
+}
+
+.skin-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) 1fr;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.skin-cover {
+  width: 100%;
+  padding-top: 100%;
+  border-radius: 18px;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  border: 1px solid #e2e8f0;
+}
+
+.skin-summary h1 {
+  margin: 0.15rem 0 0.35rem;
+}
+
+.skin-creator {
+  margin: 0;
+  color: #475569;
+}
+
+.skin-meta-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+.skin-loading {
+  margin: 0.4rem 0 0;
+  color: #475569;
+}
+
+.skin-error {
+  margin: 0.35rem 0 0;
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.skin-purchase-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.skin-price {
+  margin: 0.2rem 0;
+  font-size: 2rem;
+}
+
+.skin-price-hint {
+  margin: 0;
+  color: #475569;
+}
+
+.skin-purchase-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.skin-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.skin-preview-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.skin-preview-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.skin-empty {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  color: #475569;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.skin-wiki-skeleton {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.skin-wiki-skeleton .line {
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 0.6rem;
+}
+
+.skin-wiki-skeleton .line.wide {
+  width: 80%;
+}
+
+.skin-comment-panel {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.chart-count {
+  color: #475569;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .skin-detail-hero {
+    grid-template-columns: 1fr;
+  }
+}

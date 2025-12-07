@@ -6,9 +6,11 @@ import Topbar from '../components/Topbar'
 import { useI18n } from '../i18n'
 import {
   addComment,
+  deleteComment as removeComment,
   donateChart,
   fetchChartDonateList,
   fetchChartInfo,
+  fetchComments,
   fetchRankingList,
   fetchWiki,
   fetchWikiTemplate,
@@ -327,6 +329,11 @@ function ChartPage() {
     return resp
   }
 
+  const commentDeleter = async (tid: number) => {
+    const resp = await removeComment({ tid })
+    return resp
+  }
+
   const handleDonate = async () => {
     if (!chartId || Number.isNaN(chartId)) return
     const session = getSession()
@@ -384,10 +391,10 @@ function ChartPage() {
         {data.map((item) => (
           <div className="chart-rank-row" key={`${item.uid}-${item.time}-${item.score}`}>
             <span className="chart-rank-pos">{item.ranking ?? '-'}</span>
-            <span className="chart-rank-player">
-              <img className="chart-rank-avatar" src={avatarUrl()} alt="" />
+            <a className="chart-rank-player" href={`/player/${item.uid}`}>
+              <img className="chart-rank-avatar" src={avatarUrl(item.avatar)} alt={item.username || t('chart.ranking.unknown')} />
               <span>{item.username || t('chart.ranking.unknown')}</span>
-            </span>
+            </a>
             <span>{item.score}</span>
             <span>{`${item.acc?.toFixed(2) ?? '0'}%`}</span>
             <span>{item.combo}</span>
@@ -552,6 +559,7 @@ function ChartPage() {
               <CommentThread
                 fetchComments={commentFetcher}
                 submitComment={commentSubmitter}
+                deleteComment={commentDeleter}
                 onRequireAuth={() => {
                   setAuthMode('signin')
                   setAuthOpen(true)
@@ -583,7 +591,13 @@ function ChartPage() {
                   {donateList.map((item) => (
                     <div className="donate-item" key={`${item.uid}-${item.time}`}>
                       <div>
-                        <p className="donate-user">{item.username || t('chart.donate.unknown')}</p>
+                        {item.uid ? (
+                          <a className="donate-user" href={`/player/${item.uid}`}>
+                            {item.username || t('chart.donate.unknown')}
+                          </a>
+                        ) : (
+                          <p className="donate-user">{item.username || t('chart.donate.unknown')}</p>
+                        )}
                         <p className="donate-meta">{item.time ? new Date(item.time * 1000).toLocaleDateString() : ''}</p>
                       </div>
                       <span className="pill ghost">{t('chart.donate.gold', { value: item.gold })}</span>
